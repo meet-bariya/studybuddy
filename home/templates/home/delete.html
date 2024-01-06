@@ -19,12 +19,21 @@
                 </div>
                 <div class="layout__body">
                     <form class="form" method="POST">
+            
                         {% csrf_token %}
+                       
                         <div class="form__group">
-                            <p>Are you sure you want to delete "{{ room.name }}"?</p>
+                            {% if message %}
+                            <p>Are you sure you want to delete Message "{{ message }}" in Room <a href="{% url 'room' room.id %}"> {{ room.name }} </a> ?</p>
+                            {% else %}
+                            <p>Are you sure you want to delete Room <a href="{% url 'room' room.id %}"> {{ room.name }} </a>?</p>
+                            {% endif %}
                         </div>
+                        
+                        
 
                         <div class="for__group">
+
                             <input class="btn btn--main" type="submit" value="Confirm" />
                         </div>
 

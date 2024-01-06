@@ -14,12 +14,12 @@
         </li>
         {% for topic in topics %}
         <li>
-          <a href="{% url 'index' %}">{{topic.name}} <span>{{topic.count}}</span></a>
+          <a href="?q={{topic.name}}">{{topic.name}} <span>{{topic.count}}</span></a>
         </li>
         {% endfor %}
       </ul>
       {% else %}
-
+          <a href="{% url 'index' %}" class="active">No Topics available..</span></a>
       {% endif %}
       <a class="btn btn--link" href="{% url 'topics' %}">
         More
@@ -53,7 +53,12 @@
       <div class="roomList__header">
         <div>
           <h2>Study Room</h2>
+          {% if rooms %}
           <p>{{ rooms.count }} Rooms available</p>
+          {% else %}
+          <p> No Rooms available</p>
+
+          {% endif %}
         </div>
         <a class="btn btn--main" href="{% url 'create_room' %}">
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -115,15 +120,20 @@
       <div class="activities__header">
         <h2>Recent Activities</h2>
       </div>
+      {% if not room_messages %}
+      <p> No recent activities available. </p>
+      {% else %}
+      {% for message in room_messages %}
       <div class="activities__box">
+        
         <div class="activities__boxHeader roomListRoom__header">
-          <a href="#" class="roomListRoom__author">
+          <a href="{% url 'profile' message.host %}" class="roomListRoom__author">
             <div class="avatar avatar--small">
               <img src="https://randomuser.me/api/portraits/women/11.jpg" />
             </div>
             <p>
-              @sulamita_ivy
-              <span>5 days ago</span>
+              @{{message.host}}
+              <span>{{message.created_at | timesince}} ago</span>
             </p>
           </a>
           <div class="roomListRoom__actions">
@@ -138,12 +148,16 @@
           </div>
         </div>
         <div class="activities__boxContent">
-          <p>replied to post “<a href="#">100 Days of code challenge!</a>”</p>
-          <div class="activities__boxRoomContent">
-            I’ll have to try this sometime. Really like this idea. Wanna talk about it? I ‘m....
-          </div>
+          <p>replied to post in <a href="{% url 'room' message.room.id %}">{{message.room}}</a></p>
+          <a href="{% url 'room' message.room.id %}">
+            <div class="activities__boxRoomContent">
+              {{message }} ...
+            </div>
+          </a>
         </div>
       </div>
+      {% endfor %}
+      {% endif %}
     </div>
     <!-- Activities End -->
   </div>

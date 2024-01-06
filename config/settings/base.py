@@ -143,6 +143,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'home.User'
 
 DEBUG_PROPAGATE_EXCEPTIONS = True
+
+LOGIN_URL='/login'
+LOGOUT_URL = '/logout'
 # settings.py
 LOGGING = {
     'version': 1,
