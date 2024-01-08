@@ -1,0 +1,35 @@
+    <!-- Activities Start -->
+    <div class="activities">
+        <div class="activities__header">
+          <h2>Recent Activities</h2>
+        </div>
+        {% if not room_messages %}
+        <p> No recent activities available. </p>
+        {% else %}
+        {% for message in room_messages %}
+        <div class="activities__box">
+          
+          <div class="activities__boxHeader roomListRoom__header">
+            <a href="{% url 'profile' message.host %}" class="roomListRoom__author">
+              <div class="avatar avatar--small">
+                <img src="https://randomuser.me/api/portraits/women/11.jpg" />
+              </div>
+              <p>
+                @{{message.host}}
+                <span>{{message.created_at | timesince}} ago</span>
+              </p>
+            </a>
+          </div>
+          <div class="activities__boxContent">
+            <p>replied to post in <a href="{% url 'room' message.room.id %}">{{message.room}}</a></p>
+            <a href="{% url 'room' message.room.id %}">
+              <div class="activities__boxRoomContent">
+                {{message }} ...
+              </div>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+      <!-- Activities End -->

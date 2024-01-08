@@ -1,4 +1,4 @@
-{% extends 'home/base.html' %}
+{% extends 'base.html' %}
 {% block content %}
   <main class="create-room layout">
     <div class="container">
@@ -13,23 +13,22 @@
                 </path>
               </svg>
             </a>
-            <h3>Create Study Room</h3>
+            <h3>{{action}} Study Room</h3>
           </div>
         </div>
         <div class="layout__body">
           <form class="form" method="POST">
             {% csrf_token %}
-            <!-- <div class="form__group">
+            <div class="form__group">
               <label for="room_name">Room Name</label>
-              <input id="room_name" name="room_name" type="text" placeholder="E.g. Mastering Python + Django" />
+              <input id="room_name" name="room_name" type="text" placeholder="E.g. Mastering Python + Django" value="{{room.name}}"/>
             </div>
 
             <div class="form__group">
               <label for="room_topic">Topic</label>
-              <input required type="text" name="topic" id="room_topic" list="topic-list" />
+              <input required type="text" name="room_topic" id="room_topic" value="{{room.topic}}" list="topic-list" />
               <datalist id="topic-list">
-                <select id="room_topic" name="room_topic">
-                  <option value="#" disabled>Select your topic</option>
+                <select id="room_topic" name="topic">
                   {% for topic in topics %}
                   <option value="{{topic}}">{{topic}}</option>
                   {% endfor %}
@@ -41,17 +40,19 @@
 
             <div class="form__group">
               <label for="room_about">About</label>
-              <textarea name="room_about" id="room_about" placeholder="Write about your study group..."></textarea>
-            </div> -->
-
-            <div class="form__group">
-              {{ form }}
+              <textarea name="room_about" id="room_about" placeholder="Write about your study group...">{{room.description}}</textarea>
             </div>
-         
+            <!-- {% for field in form %}
+            <div class="form__group">
+              <label for="room_name">{{field.label}}</label>
+              {{field}}
+            </div>
+            {% endfor %}
+          -->
 
             <div class="form__action">
               <a class="btn btn--dark" href="{% url 'index' %}">Cancel</a>
-              <button class="btn btn--main" type="submit">Create Room</button>
+            <button class="btn btn--main" type="submit">{{action}} Room</button>
             </div>
           </form>
         </div>

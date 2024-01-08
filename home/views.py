@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-
+from django.http import Http404
 # Room 
 def index(request):
 
@@ -57,38 +57,48 @@ def activity(request):
 
 @login_required
 def update_room(request,pk):
-
     room = Room.objects.get(id=pk)
-    form = RoomForm(instance=room)
 
+    if room.host != request.user:
+        raise Http404
     if request.method == 'POST':
-        form = RoomForm(request.POST, instance=room)
-        if form.is_valid():
-            form.save()
-            return redirect('index')
-    context = {'form':form}
-    return render(request, 'home/create-room.html', context)
+        room_name = request.POST.get('room_name')
+        room_topic = request.POST.get('room_topic')
+        room_about = request.POST.get('room_about')
+        topic,created = Topic.objects.get_or_create(name=room_topic)
+        room.name = room_name
+        room.topic = topic
+        room.description = room_about
+        room.save()
+        return redirect('index')
+    context = {'action':'Update','room':room}
+    return render(request, 'home/room_form.html', context)
 
 @login_required
 def create_room(request):
-    form = RoomForm()
+    # form = RoomForm()
     if request.method == 'POST':
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            form.save(commit=False)
-            form.host = request.user
-            form.save()
-            return redirect('index')
-        # room_name = request.POST.get('room_name')
-        # room_topic = request.POST.get('room_topic')
-        # room_about = request.POST.get('room_about')
-        # print(room_name, room_topic ,room_about)
-        # topic = Topic.objects.get(name=room_topic)
-        # room = Room.objects.create(name=room_name, host=request.user, topic=topic, description=room_about)
+        # form = RoomForm(request.POST)
+        # if form.is_valid():
+        #     form.save(commit=False)
+        #     form.host = request.user
+        #     form.save()
+        #     return redirect('index')
+        room_name = request.POST.get('room_name')
+        room_topic = request.POST.get('room_topic')
+        room_about = request.POST.get('room_about')
+        topic,created = Topic.objects.get_or_create(name=room_topic)
+        room = Room.objects.create(
+            name=room_name, 
+            host=request.user, 
+            topic=topic, 
+            description=room_about)
+        room.participants.add(request.user)
+        return redirect('room',pk=room.id)
 
     topics = Topic.objects.all()
-    context = {'topics':topics,'form':form}
-    return render(request, 'home/create-room.html', context)
+    context = {'topics':topics, 'action':'Create'}
+    return render(request, 'home/room_form.html', context)
 
 @login_required
 def delete_room(request,pk):
@@ -149,8 +159,11 @@ def profile_settings(request):
 
 def user_profile(request,pk:str):
     profile = get_object_or_404(User,username=pk)
+    topics = Topic.objects.all()
+
     print(profile.avatar)
     rooms = Room.objects.filter(host=profile)
     room_messages = profile.message_set.all()
-    context = {'profile': profile, 'rooms':rooms, 'room_messages':room_messages}
+    context = {'profile': profile, 'rooms':rooms, 'room_messages':room_messages, 'topics':topics}
     return render(request, 'home/profile.html', context)
+
