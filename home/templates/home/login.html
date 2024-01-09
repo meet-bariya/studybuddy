@@ -9,12 +9,6 @@
           <div class="layout__body">
             <h2 class="auth__tagline">Find your study partner</h2>
 
-            {% if messages %}
-                {% for message in messages %}
-                <p>{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-
             <form class="form" method="POST">
               {% csrf_token %}
               <div class="form__group form__group">

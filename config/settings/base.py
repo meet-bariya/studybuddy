@@ -37,9 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+ADDITIONAL_APPS = [
     'home.apps.HomeConfig',
     'whitenoise.runserver_nostatic'
 ]
+
+INSTALLED_APPS += ADDITIONAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

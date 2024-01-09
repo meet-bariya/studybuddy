@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login,logout
 from .models import Topic, Room, Message, User
 from django.core.mail import EmailMessage
-from .forms import RoomForm
+from .forms import RoomForm, UserForm
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -14,7 +14,7 @@ def index(request):
 
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
-    topics = Topic.objects.all()
+    topics = Topic.objects.all()[:5]
     rooms = Room.objects.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
@@ -23,12 +23,16 @@ def index(request):
     room_messages = Message.objects.filter(
         Q(room__topic__name__icontains=q) |
         Q(room__name__icontains=q)
-        ).order_by('-created_at')
+        ).order_by('-created_at')[:3]
     context = {'topics':topics, 'rooms':rooms, 'room_messages': room_messages}
     return render(request, 'home/index.html', context)
 
 def room(request,pk):
-    get_room = Room.objects.get(id=pk)
+    try:
+        get_room = Room.objects.get(id=pk)
+    except:
+        messages.error(request,'We\'re not able to fetch the room or it does not exist anymore.')
+        return redirect('index')
     room_messages = get_room.message_set.all().order_by('-created_at')
     participants = get_room.participants.all()
 
@@ -46,21 +50,31 @@ def room(request,pk):
     return render(request, 'home/room.html',context)
 
 def topics(request):
-    topics=Topic.objects.all()
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    topics=Topic.objects.filter(name__icontains=q)
+
     context={'topics':topics}
     return render(request, 'home/topics.html',context)
 
 def activity(request):
-    return render(request, 'home/activity.html')
+    room_messages = Message.objects.all().order_by('-created_at')[:3]
+    context = {'room_messages':room_messages}
+    return render(request, 'home/activity.html', context)
 
 ## Room CRUD
 
 @login_required
 def update_room(request,pk):
-    room = Room.objects.get(id=pk)
+    try:
+        room = Room.objects.get(id=pk)
+    except:
+        messages.error(request,'We\'re not able to fetch the room or it does not exist anymore.')
+        return redirect('index')
 
     if room.host != request.user:
-        raise Http404
+        messages.error(request, 'You\'re not authorized to edit this room details. Please contact the room host.')
+        return redirect('room', pk=room.id)
     if request.method == 'POST':
         room_name = request.POST.get('room_name')
         room_topic = request.POST.get('room_topic')
@@ -102,11 +116,20 @@ def create_room(request):
 
 @login_required
 def delete_room(request,pk):
+    try:
+        room = Room.objects.get(id=pk)
+    except:
+        messages.error(request,'We\'re not able to fetch the room or it does not exist anymore.')
+        return redirect('index')
+
     if request.method == 'POST':
+        if room.host != request.user:
+            messages.error(request, 'You\'re not authorized to perform any action in this room. Please contact the room host.')
+            return redirect('room', pk=room.id)
         room = Room.objects.get(id=pk)
         room.delete()
         return redirect('index')
-    room = Room.objects.get(id=pk)
+
     context = {'room':room}
     return render(request, 'home/delete.html',context)
 
@@ -155,13 +178,23 @@ def logout_user(request):
 ## User Section
 @login_required
 def profile_settings(request):
-    return render(request, 'home/settings.html')
+    user = request.user
+    form = UserForm(instance=user)
+
+    if request.method == 'POST':
+        print('I\'m feeling really good. I mean why not')
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.info(request,'Profile updated successfully')
+            return redirect('profile',pk=request.user)
+    context = {'form':form}
+    return render(request, 'home/settings.html', context)
 
 def user_profile(request,pk:str):
     profile = get_object_or_404(User,username=pk)
-    topics = Topic.objects.all()
+    topics = Topic.objects.all()[:5]
 
-    print(profile.avatar)
     rooms = Room.objects.filter(host=profile)
     room_messages = profile.message_set.all()
     context = {'profile': profile, 'rooms':rooms, 'room_messages':room_messages, 'topics':topics}
