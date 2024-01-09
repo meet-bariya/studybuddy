@@ -20,7 +20,7 @@
       <div class="settings layout__body">
         <div class="settings__avatar">
           <div class="avatar avatar--large active">
-            <img src="{{user.avatar}}" id="preview-avatar" />
+            <img src="{{user.avatar.url}}" id="preview-avatar" />
           </div>
         </div>
         <form class="form" method="POST" action="{% url 'profile_settings' %}">

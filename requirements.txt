@@ -5,3 +5,4 @@ whitenoise
 python-decouple
 psycopg2-binary
 djangorestframework
+django-cloudinary-storage
