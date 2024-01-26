@@ -2,7 +2,7 @@ version: "3.8"
 services:
   web:
     build: .
-    image: studybuddy:1.0
+    image: meetbariya/studybuddy:1.0
     ports:
       - "8000:8000"
     env_file:
